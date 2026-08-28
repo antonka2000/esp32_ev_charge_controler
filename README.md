@@ -4,17 +4,17 @@ What it can do as of 08/26
 
 I can read pv data from Sungrow sh10RT;  
 see how much i can provide to a Keba PV 30C;  
-put this as the charging Value for a connected car.  
+put this as the charging value for a connected car.   
 
-all in a simple esp32 via modbus tcp via wifi
+all in a simple esp32 via modbus tcp via wifi  
 
-Perspective and goals:
+Perspectives and goals:  
 
-#1
+#1  
 
-4 modes
+4 modes  
 
-1- PV-mode
+1- PV-mode  
 2- min charge mode (+PV) - to set via web interface  
 3- max charge mode       - to set via web interface  
 4- eco charge mode       - set vai web interface:  
