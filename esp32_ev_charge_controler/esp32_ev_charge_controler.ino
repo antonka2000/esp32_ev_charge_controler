@@ -1,6 +1,8 @@
 #include <WiFi.h>
 #include <ModbusTCP.h>
 #include "ConfigWeb.h"
+#include "LED.h"
+#include "ChargeMode.h"
 
 // ============================================================
 // MODBUS
@@ -55,6 +57,35 @@ bool writeCallback(Modbus::ResultCode event, uint16_t tid, void* data) {
     Serial.println("Schreiben OK");
   }
   return true;
+}
+
+void updateModeLED()
+{
+    // Alle Mode-LEDs ausschalten
+    ledSetMode(0, LED_OFF);
+    ledSetMode(1, LED_OFF);
+    ledSetMode(2, LED_OFF);
+    ledSetMode(3, LED_OFF);
+
+    // Aktiven Modus anzeigen
+    switch (getChargeMode()) {
+
+        case PV_SURPLUS:
+            ledSetMode(0, LED_SOLID);
+            break;
+
+        case MIN_CHARGE:
+            ledSetMode(1, LED_SOLID);
+            break;
+
+        case MAX_CHARGE:
+            ledSetMode(2, LED_SOLID);
+            break;
+
+        case MIN_PRICE:
+            ledSetMode(3, LED_SOLID);
+            break;
+    }
 }
 
 void writeKebaCurrent(uint16_t mA) {
@@ -290,7 +321,13 @@ void printKeba() {
 // SETUP
 // ============================================================
 void setup() {
+
   Serial.begin(115200);
+
+  ledInit();
+  chargeModeInit();
+  updateModeLED();
+ 
   delay(800);
   Serial.println("\nESP32 – Sungrow + Keba + WebConfig");
 
@@ -315,6 +352,21 @@ void setup() {
 // ============================================================
 void loop() {
   handleConfigWeb();
+
+  ledUpdate();
+
+  ButtonEvent event = buttonEvent();
+
+  if (event == BUTTON_SHORT_PRESS) {
+    nextChargeMode();
+    updateModeLED();
+  }
+
+  if (event == BUTTON_LONG_PRESS) {
+        // manueller Override
+  }
+
+
   mb.task();
 
   if (WiFi.status() != WL_CONNECTED) {
