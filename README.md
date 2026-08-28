@@ -2,8 +2,8 @@ Welcome to the esp32 ev charge project.
 
 What it can do as of 08/26
 
-I can read pv data from Sungrow sh10RT
-see how much i can provide to a Keba PV 30C
+I can read pv data from Sungrow sh10RT; 
+see how much i can provide to a Keba PV 30C;
 put this as the charging Value for a connected car.
 
 all in a simple esp32 via modbus tcp via wifi
