@@ -17,7 +17,7 @@ Perspectives and goals:
 1- PV-mode  
 2- min charge mode (+PV) - to set via web interface  
 3- max charge mode       - to set via web interface  
-4- eco charge mode       - set vai web interface:  
+4- eco charge mode       - set via web interface:  
         - start time  
         - finish time  
         - charge power  
