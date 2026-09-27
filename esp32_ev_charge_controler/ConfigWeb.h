@@ -4,6 +4,7 @@
 #include <Preferences.h>
 #include <DNSServer.h>
 
+
 DNSServer dnsServer;
 const byte DNS_PORT = 53;
 bool isAPMode = false;
@@ -25,8 +26,8 @@ struct AppConfig {
 
   int16_t  houseBaseW      = 700;   // angenommener Hausverbrauch (einstellbar)
 
-  char     kebaIP[16]       = "192.168.7.178";
-  uint16_t kebaPort         = 502;
+  char     kebaIP[16]       = "192.168.7.222";
+  uint16_t kebaPort         = 5020;
   uint8_t  kebaUnitId       = 255;
 
   uint16_t pollIntervalMs   = 2000;
@@ -54,7 +55,6 @@ void loadConfig() {
   strlcpy(cfg.sungrowIP,  prefs.getString("sgIP",   cfg.sungrowIP).c_str(),  sizeof(cfg.sungrowIP));
   strlcpy(cfg.sungrowIP2, prefs.getString("sgIP2",  cfg.sungrowIP2).c_str(), sizeof(cfg.sungrowIP2));
   strlcpy(cfg.kebaIP,     prefs.getString("kebaIP", cfg.kebaIP).c_str(),     sizeof(cfg.kebaIP));
-
   cfg.sungrowPort      = prefs.getUShort("sgPort",   cfg.sungrowPort);
   cfg.sungrowPort2     = prefs.getUShort("sgPort2",  cfg.sungrowPort2);
   cfg.kebaPort         = prefs.getUShort("kebaPort", cfg.kebaPort);
@@ -125,8 +125,8 @@ button{width:100%;margin-top:18px;padding:12px;background:#007aff;color:#fff;bor
   h += f("pw",       "WLAN Passwort",       cfg.password, "password");
   h += f("sgIP",     "Sungrow IP",          cfg.sungrowIP);
   h += f("sgPort",   "Sungrow Port",        String(cfg.sungrowPort), "number");
-  h += f("sgIP2",    "Sungrow IP2",         cfg.sungrowIP);
-  h += f("sgPort2",  "Sungrow Port2",       String(cfg.sungrowPort), "number");
+  h += f("sgIP2",    "Sungrow IP2",         cfg.sungrowIP2);
+  h += f("sgPort2",  "Sungrow Port2",       String(cfg.sungrowPort2), "number");
   h += f("kebaIP",   "Keba IP",             cfg.kebaIP);
   h += f("kebaPort", "Keba Port",           String(cfg.kebaPort), "number");
   h += f("kebaId",   "Keba Unit-ID",        String(cfg.kebaUnitId), "number");
@@ -206,8 +206,10 @@ void handleSave() {
   if (server.hasArg("ssid"))     strlcpy(cfg.ssid,      server.arg("ssid").c_str(),     sizeof(cfg.ssid));
   if (server.hasArg("pw"))       strlcpy(cfg.password,  server.arg("pw").c_str(),       sizeof(cfg.password));
   if (server.hasArg("sgIP"))     strlcpy(cfg.sungrowIP, server.arg("sgIP").c_str(),     sizeof(cfg.sungrowIP));
+  if (server.hasArg("sgIP2"))    strlcpy(cfg.sungrowIP2, server.arg("sgIP2").c_str(), sizeof(cfg.sungrowIP2));
   if (server.hasArg("kebaIP"))   strlcpy(cfg.kebaIP,    server.arg("kebaIP").c_str(),   sizeof(cfg.kebaIP));
   if (server.hasArg("sgPort"))   cfg.sungrowPort    = server.arg("sgPort").toInt();
+  if (server.hasArg("sgPort2"))  cfg.sungrowPort2   = server.arg("sgPort2").toInt();
   if (server.hasArg("kebaPort")) cfg.kebaPort       = server.arg("kebaPort").toInt();
   if (server.hasArg("kebaId"))   cfg.kebaUnitId     = server.arg("kebaId").toInt();
   if (server.hasArg("poll"))     cfg.pollIntervalMs = server.arg("poll").toInt();
@@ -265,10 +267,10 @@ bool startWiFi() {
                  (strlen(cfg.ssid) > 2);   // grobe Prüfung
 
   if (hasSSID) {
-    Serial.printf("Versuche WLAN: %s\n", cfg.ssid);
+    Serial.printf("Versuche WLAN: %s  %s\n", cfg.ssid, cfg.password );
     WiFi.mode(WIFI_STA);
-    WiFi.begin(cfg.ssid, cfg.password);
-
+    WiFi.begin(cfg.ssid, cfg.password );
+//    WiFi.setTxPower(WIFI_POWER_19_5dBm);
     unsigned long start = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - start < 15000) {
       delay(400);

@@ -9,6 +9,7 @@
 
 enum ChargeMode {
     PV_SURPLUS,
+    PV_MIN,
     MIN_CHARGE,
     MAX_CHARGE,
     MIN_PRICE

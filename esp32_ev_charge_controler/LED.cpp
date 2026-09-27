@@ -4,12 +4,20 @@
 // Internal LED state
 // --------------------------------------------------
 
+volatile bool buttonPressed = false;
+volatile uint32_t lastInterruptTime = 0;
+const uint32_t DEBOUNCE_MS = 40;     // Entprellzeit
+
+
+
 struct LedState {
     uint8_t pin;
     LedMode mode;
     bool state;
     unsigned long lastChange;
 };
+
+extern bool isPaused; 
 
 LedState leds[] = {
     { LED_PV,    LED_OFF, false, 0 },
@@ -49,33 +57,33 @@ bool longPressReported = false;
 
 void ledInit()
 {
-    for (auto &led : leds) {
-        pinMode(led.pin, OUTPUT);
-        digitalWrite(led.pin, LOW);
+  const uint8_t pins[] = { LED_PV, LED_MIN, LED_MAX, LED_PRICE };
 
-        led.state = false;
-        led.mode = LED_OFF;
-        led.lastChange = millis();
-    }
+  for (uint8_t i = 0; i < 4; i++) {
+    Serial.printf("pinMode %u\n", pins[i]);
+    pinMode(pins[i], OUTPUT);
+    digitalWrite(pins[i], LOW);
 
-    pinMode(BUTTON_MODE, INPUT_PULLUP);
-
-    buttonLastReading = HIGH;
-    buttonStableState = HIGH;
-    buttonLastChange = millis();
-
-    buttonPressedAt = 0;
-    longPressReported = false;
+    leds[i].pin = pins[i];
+    leds[i].state = false;
+    leds[i].mode = LED_OFF;
+    leds[i].lastChange = millis();
+  }
 }
 
 
 // --------------------------------------------------
 // Set LED mode
 // --------------------------------------------------
-
 void ledSetMode(uint8_t led, LedMode mode)
 {
     if (led >= 4)
+        return;
+
+    // Nichts tun, wenn der Modus bereits identisch ist.
+    // Dadurch wird beim erneuten Aufruf der Blink-Timer nicht
+    // zurückgesetzt.
+    if (leds[led].mode == mode)
         return;
 
     leds[led].mode = mode;
@@ -91,6 +99,25 @@ void ledSetMode(uint8_t led, LedMode mode)
 
     leds[led].lastChange = millis();
 }
+
+// void ledSetMode(uint8_t led, LedMode mode)
+// {
+//     if (led >= 4)
+//         return;
+
+//     leds[led].mode = mode;
+
+//     if (mode == LED_OFF) {
+//         leds[led].state = false;
+//         digitalWrite(leds[led].pin, LOW);
+//     }
+//     else if (mode == LED_SOLID) {
+//         leds[led].state = true;
+//         digitalWrite(leds[led].pin, HIGH);
+//     }
+
+//     leds[led].lastChange = millis();
+// }
 
 
 // --------------------------------------------------
@@ -124,77 +151,25 @@ void ledUpdate()
 }
 
 
-// --------------------------------------------------
-// Button event handling
-// --------------------------------------------------
+void handlePauseBlinking() {
+  // Nur blinken, wenn der Pausenmodus auch wirklich aktiv ist
+  if (!isPaused) return;
 
-ButtonEvent buttonEvent()
-{
-    bool reading = digitalRead(BUTTON_MODE);
-    unsigned long now = millis();
+  // Zeitbasis: Alle 500ms den Zustand wechseln (1000ms Gesamtperiode)
+  static unsigned long lastBlinkTime = 0;
+  static bool ledState = false;
 
-    // ----------------------------------------------
-    // Physical state changed
-    // ----------------------------------------------
+  if (millis() - lastBlinkTime >= 500) {
+    lastBlinkTime = millis();
+    ledState = !ledState; // Zustand umkehren
 
-    if (reading != buttonLastReading) {
-        buttonLastChange = now;
-        buttonLastReading = reading;
-    }
+    // Alle LEDs sicherheitshalber aus, bis auf die blinkende
+    digitalWrite(LED_MIN, LOW);
+    digitalWrite(LED_MAX, LOW);
+    digitalWrite(LED_PRICE, LOW);
 
-
-    // ----------------------------------------------
-    // Wait until state is stable
-    // ----------------------------------------------
-
-    if ((now - buttonLastChange) < BUTTON_DEBOUNCE_TIME) {
-        return BUTTON_NONE;
-    }
-
-
-    // ----------------------------------------------
-    // Stable state changed
-    // ----------------------------------------------
-
-    if (reading != buttonStableState) {
-
-        buttonStableState = reading;
-
-        // ------------------------------------------
-        // Button pressed
-        // ------------------------------------------
-
-        if (buttonStableState == LOW) {
-            buttonPressedAt = now;
-            longPressReported = false;
-        }
-
-        // ------------------------------------------
-        // Button released
-        // ------------------------------------------
-
-        else {
-
-            if (!longPressReported) {
-                return BUTTON_SHORT_PRESS;
-            }
-        }
-    }
-
-
-    // ----------------------------------------------
-    // Long press
-    // ----------------------------------------------
-
-    if (buttonStableState == LOW &&
-        !longPressReported &&
-        (now - buttonPressedAt >= BUTTON_LONG_PRESS_TIME)) {
-
-        longPressReported = true;
-
-        return BUTTON_LONG_PRESS;
-    }
-
-
-    return BUTTON_NONE;
+    // Die PV-LED im Wechsel an- und ausschalten
+    digitalWrite(LED_PV, ledState ? HIGH : LOW);
+  }
 }
+
