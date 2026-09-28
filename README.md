@@ -1,10 +1,14 @@
 Welcome to the esp32 ev charge project.
 
-What it can do as of 08/26
+What it can do as of 09/26
 
-I can read pv data from Sungrow sh10RT;  
+1.) I can read pv data from Sungrow SH10RT;  
 see how much i can provide to a Keba PV 30C;  
-put this as the charging value for a connected car.   
+put this as the charging value for a connected car.
+2.) minimum charging combined with PV-Charging. 
+3.) make minimum charging 
+4.) provice maximum charging
+5.) this option is still "work in progress"
 
 all in a simple esp32 via modbus tcp via wifi  
 
@@ -15,8 +19,8 @@ Perspectives and goals:
 4 modes  
 
 1- PV-mode  
-2- min charge mode (+PV) - to set via web interface  
-3- max charge mode       - to set via web interface  
+2- min charge mode (+PV) - Min Value to set via web interface  
+3- max charge mode       - Max to set via web interface  
 4- eco charge mode       - set via web interface:  
         - start time  
         - finish time  
@@ -26,11 +30,13 @@ Perspectives and goals:
 #2  
 mode changes via button  
 mode indications via 4 leds  
+fast blink for successful charging
+slow blink when charging stopped
 
 #3  
 
-different chargers  
-different inverters  
+different chargers   / planed
+different inverters  / planed
 
 #4  
 keep it simple, costless, user friendly  
