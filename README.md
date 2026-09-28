@@ -42,6 +42,7 @@ different inverters  / planed
 keep it simple, costless, user friendly  
 So email what you want and help improve the system.  
 
+<img width="660" height="886" alt="grafik" src="https://github.com/user-attachments/assets/a5c4cca3-301e-4833-aa9b-5dfd4854dd2e" />
 
 
 
